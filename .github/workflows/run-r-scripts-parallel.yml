@@ -6,7 +6,7 @@ on:
       num_scripts:
         description: 'Number of R scripts to run (1-100)'
         required: true
-        default: '100' # You can set this default to 100 or any other value
+        default: '100'
 
 jobs:
   # Job to generate the matrix of script numbers
@@ -19,22 +19,23 @@ jobs:
         id: generate_list
         run: |
           NUM_SCRIPTS=${{ github.event.inputs.num_scripts }}
-          # Generate numbers from 1 to NUM_SCRIPTS, convert to JSON array using jq
-          numbers=$(seq 1 $NUM_SCRIPTS | jq -R . | jq -s .)
-          echo "matrix=$numbers" >> $GITHUB_OUTPUT
+          # Generate numbers from 1 to NUM_SCRIPTS, and format as a JSON array
+          # Use -c for compact output (no extra whitespace or newlines)
+          numbers_json=$(seq 1 $NUM_SCRIPTS | jq -R . | jq -s .)
+          echo "matrix=$numbers_json" >> $GITHUB_OUTPUT
 
   # Job to run the R scripts in parallel, using the generated matrix
   run-r-scripts:
-    needs: generate-matrix # This job depends on the 'generate-matrix' job
+    needs: generate-matrix
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        script: ${{ fromJson(needs.generate-matrix.outputs.script_matrix) }} # Use fromJson to parse the JSON string into the matrix
+        script: ${{ fromJson(needs.generate-matrix.outputs.script_matrix) }}
 
     name: Run main_script${{ matrix.script }}.R
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # Recommended to use the latest version of actions/checkout
+        uses: actions/checkout@v4
 
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
