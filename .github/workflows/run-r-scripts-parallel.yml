@@ -9,7 +9,6 @@ on:
         default: '100'
 
 jobs:
-  # Job to generate the matrix of script numbers
   generate-matrix:
     runs-on: ubuntu-latest
     outputs:
@@ -19,12 +18,23 @@ jobs:
         id: generate_list
         run: |
           NUM_SCRIPTS=${{ github.event.inputs.num_scripts }}
-          # Generate numbers from 1 to NUM_SCRIPTS, and format as a JSON array
-          # Use -c for compact output (no extra whitespace or newlines)
-          numbers_json=$(seq 1 $NUM_SCRIPTS | jq -R . | jq -s .)
+          echo "Debug: Raw NUM_SCRIPTS input: $NUM_SCRIPTS"
+
+          # Use a loop to build the array string directly without piping through multiple jqs
+          # This might be more robust in some shell environments
+          array_elements=""
+          for i in $(seq 1 $NUM_SCRIPTS); do
+            if [ -z "$array_elements" ]; then
+              array_elements="$i"
+            else
+              array_elements="$array_elements, $i"
+            fi
+          done
+          numbers_json="[$array_elements]"
+
+          echo "Debug: Generated JSON string: $numbers_json"
           echo "matrix=$numbers_json" >> $GITHUB_OUTPUT
 
-  # Job to run the R scripts in parallel, using the generated matrix
   run-r-scripts:
     needs: generate-matrix
     runs-on: ubuntu-latest
