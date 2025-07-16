@@ -1,11 +1,11 @@
-#main_script2.R
+#main_script1.R
 
 # Make sure working directory is the same as the script location (implicitly handled in GitHub Actions)
 # Print working directory
 cat("Working directory:", getwd(), "\n")
 
 # Set up and confirm output folder
-output_dir <- file.path(getwd(), "outputs/script2")
+output_dir <- file.path(getwd(), "outputs/script71")
 dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 cat("Created directory:", output_dir, "\n")
 
@@ -36,7 +36,7 @@ for(i in 1:6){
   
   # Load the shared bgpp1_1 data
   
-  bgpp_1 <- read.csv(paste0("CodeRD/code/bgpp", i, "/bgno2.csv"), header = FALSE, row.names = NULL)
+  bgpp_1 <- read.csv(paste0("CodeRD/code/bgpp", i, "/bgno71.csv"), header = FALSE, row.names = NULL)
   colnames(bgpp_1) <- c('x', 'y', 'cost', 'prob')
   bgpp_1$status <- 0
   bgpp_1$cost <- 5
@@ -47,7 +47,7 @@ for(i in 1:6){
     # Loop through j from 1 to 19
     for (j in 1:19) {
       # Build the obstacle file path
-      path <- paste0("CodeRD/code/obstpp", j, "/obstpp", j, "_", k, "_2.csv")
+      path <- paste0("CodeRD/code/obstpp", j, "/obstpp", j, "_", k, "_71.csv")
       
       # Read obstacle data
       obst <- read.csv(path, header = FALSE, row.names = NULL)
@@ -79,3 +79,4 @@ for(i in 1:6){
 
 
 saveRDS(results_1, file.path(output_dir, "data_1.rds"))
+
