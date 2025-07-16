@@ -1,19 +1,40 @@
 name: Run Multiple R Scripts in Parallel
 
 on:
-  workflow_dispatch:  # Trigger manually from GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      num_scripts:
+        description: 'Number of R scripts to run (1-100)'
+        required: true
+        default: '100' # You can set this default to 100 or any other value
 
 jobs:
+  # Job to generate the matrix of script numbers
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      script_matrix: ${{ steps.generate_list.outputs.matrix }}
+    steps:
+      - name: Generate script numbers
+        id: generate_list
+        run: |
+          NUM_SCRIPTS=${{ github.event.inputs.num_scripts }}
+          # Generate numbers from 1 to NUM_SCRIPTS, convert to JSON array using jq
+          numbers=$(seq 1 $NUM_SCRIPTS | jq -R . | jq -s .)
+          echo "matrix=$numbers" >> $GITHUB_OUTPUT
+
+  # Job to run the R scripts in parallel, using the generated matrix
   run-r-scripts:
+    needs: generate-matrix # This job depends on the 'generate-matrix' job
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        script: [1, 2]  
+        script: ${{ fromJson(needs.generate-matrix.outputs.script_matrix) }} # Use fromJson to parse the JSON string into the matrix
 
     name: Run main_script${{ matrix.script }}.R
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # Recommended to use the latest version of actions/checkout
 
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
